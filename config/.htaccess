@@ -1,0 +1,2 @@
+# Nobody should open the config files from the browser.
+Require all denied
