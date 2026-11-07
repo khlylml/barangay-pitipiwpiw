@@ -108,10 +108,10 @@ require 'includes/header.php';
     </div>
 
     <div class="form-field">
-        <label for="incident_date">Date and Time of Incident</label>
+        <label for="incident_date">Date of Incident</label>
 
         <input
-            type="datetime-local"
+            type="date"
             id="incident_date"
             name="incident_date"
             value="<?= escapeReport($_POST['incident_date'] ?? '') ?>"
@@ -294,16 +294,16 @@ require 'includes/header.php';
     <p id="cameraMessage" class="camera-message" aria-live="polite"></p>
 
     <div class="camera-controls">
-        <button type="button" class="button button-primary" id="captureBtn">
-            Capture
+        <button type="button" class="cam-btn" id="closeCamera" aria-label="Cancel" title="Cancel">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
 
-        <button type="button" class="button button-secondary" id="flipCamera">
-            Flip Camera
+        <button type="button" class="cam-btn cam-shutter" id="captureBtn" aria-label="Take photo" title="Take photo">
+            <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </button>
 
-        <button type="button" class="button button-outline" id="closeCamera">
-            Cancel
+        <button type="button" class="cam-btn" id="flipCamera" aria-label="Flip camera" title="Flip camera">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
         </button>
     </div>
 </dialog>
@@ -690,7 +690,7 @@ document.addEventListener('DOMContentLoaded', function () {
         list.textContent = '';
         addRow('Incident type', typeText);
         if (isOther()) { addRow('Specified type', form.elements['other_type'].value); }
-        addRow('Date and time', when);
+        addRow('Date of incident', when);
         addRow('Description', form.elements['description'].value);
         addRow('Location description', form.elements['location_description'].value);
         addRow('Landmark', form.elements['landmark'].value);

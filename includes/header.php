@@ -140,6 +140,7 @@ $navLink = function (
             <?php $navLink('dashboard.php', 'Dashboard', '', '', 'dash'); ?>
             <?php $navLink('report-incident.php', 'Report an Incident', '', '', 'plus'); ?>
             <?php $navLink('my-reports.php', 'My Reports', '', '', 'list'); ?>
+            <?php $navLink('community-reports.php', 'Community Reports', '', '', 'eye'); ?>
             <?php $navLink('profile.php', 'Profile', '', '', 'user'); ?>
 
         <?php endif; ?>

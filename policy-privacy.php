@@ -49,9 +49,8 @@ require 'includes/header.php';
     <p>This policy may be updated as the prototype's features change. The latest version will be displayed on this page.</p>
 
     <h2>10. Contact</h2>
-    <p><strong>Project:</strong> Barangay Incident Reporting and Management System</p>
-    <p><strong>Email:</strong> <a href="mailto:barangaypitipiwpiw@gmail.com">barangaypitipiwpiw@gmail.com</a> (student project team).</p>
-    <p><strong>Website:</strong> Local or classroom demonstration only.</p>
+    <p><strong>Website:</strong> Barangay Incident Reporting and Management System (<a href="https://barangaypitipiwpiw.site">barangaypitipiwpiw.site</a>)</p>
+    <p><strong>Email:</strong> <a href="mailto:mejiakhleya@gmail.com">mejiakhleya@gmail.com</a></p>
 </article>
 
 <?php require 'includes/footer.php'; ?>

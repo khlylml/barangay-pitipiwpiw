@@ -31,7 +31,9 @@ require 'includes/header.php';
     <p>If you believe content was removed by mistake, contact the project team with the report number and an explanation. The team may review the decision as part of the academic prototype process.</p>
 
     <h2>5. Contact for Copyright Concerns</h2>
-    <p>Email the student project team at <a href="mailto:barangaypitipiwpiw@gmail.com">barangaypitipiwpiw@gmail.com</a>, or contact your instructor using the communication method provided for the class project. This page describes a project-level process and does not claim to establish a formal DMCA agent or legal notice procedure.</p>
+    <p><strong>Website:</strong> Barangay Incident Reporting and Management System (<a href="https://barangaypitipiwpiw.site">barangaypitipiwpiw.site</a>)</p>
+    <p><strong>Email:</strong> <a href="mailto:mejiakhleya@gmail.com">mejiakhleya@gmail.com</a></p>
+    <p>This page describes a project-level process and does not claim to establish a formal DMCA agent or legal notice procedure.</p>
 </article>
 
 <?php require 'includes/footer.php'; ?>

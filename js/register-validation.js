@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const patterns = {
         mobile: /^(09\d{9}|\+639\d{9})$/,
         email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-        password: /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!])\S{8,}$/
+        password: /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,}$/
     };
 
     // Each rule returns an error message, or "" when the value is fine.
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", function () {
         },
         password: function (v) {
             return patterns.password.test(v) ? "" :
-                "At least 8 characters with 1 capital letter, 1 number, and one of @ $ !. No spaces.";
+                "At least 8 characters with 1 capital letter, 1 number, and 1 special character (like @ $ ! #). No spaces.";
         },
         confirm_password: function (v) {
             const password = form.elements["password"].value;

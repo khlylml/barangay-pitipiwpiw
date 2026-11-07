@@ -49,7 +49,9 @@ require 'includes/header.php';
     <p>For the purposes of this academic prototype, applicable laws of the Philippines may be relevant. This statement is for project documentation and is not a legal opinion.</p>
 
     <h2>11. Contact</h2>
-    <p>For project-related questions, email the student project team at <a href="mailto:barangaypitipiwpiw@gmail.com">barangaypitipiwpiw@gmail.com</a>, or use the communication method provided by your class or instructor.</p>
+    <p>For questions about this website, contact us:</p>
+    <p><strong>Website:</strong> Barangay Incident Reporting and Management System (<a href="https://barangaypitipiwpiw.site">barangaypitipiwpiw.site</a>)</p>
+    <p><strong>Email:</strong> <a href="mailto:mejiakhleya@gmail.com">mejiakhleya@gmail.com</a></p>
 </article>
 
 <?php require 'includes/footer.php'; ?>

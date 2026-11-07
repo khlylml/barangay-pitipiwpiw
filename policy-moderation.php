@@ -41,7 +41,9 @@ require 'includes/header.php';
     <p>Submit accurate information to the best of your knowledge. Avoid uploading unnecessary personal details or material that could endanger, embarrass, or identify another person.</p>
 
     <h2>8. Contact</h2>
-    <p>For moderation or removal requests, email the student project team at <a href="mailto:barangaypitipiwpiw@gmail.com">barangaypitipiwpiw@gmail.com</a>, or use the communication method provided by your class or instructor.</p>
+    <p>For moderation or removal requests, contact us:</p>
+    <p><strong>Website:</strong> Barangay Incident Reporting and Management System (<a href="https://barangaypitipiwpiw.site">barangaypitipiwpiw.site</a>)</p>
+    <p><strong>Email:</strong> <a href="mailto:mejiakhleya@gmail.com">mejiakhleya@gmail.com</a></p>
 </article>
 
 <?php require 'includes/footer.php'; ?>

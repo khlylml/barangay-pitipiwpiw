@@ -288,16 +288,34 @@ require __DIR__ . '/includes/header.php';
         <section class="details-card ai-suggestion">
             <h2>AI Suggestion</h2>
 
+            <?php
+            $aiPercent = (int) round(((float) $aiSuggestion['confidence_score']) * 100);
+
+            if ($aiPercent >= 80) {
+                $aiLevel = 'High confidence';
+            } elseif ($aiPercent >= 50) {
+                $aiLevel = 'Medium confidence, please verify';
+            } else {
+                $aiLevel = 'Low confidence, please check the description yourself';
+            }
+            ?>
             <p>
                 <strong>Suggested type:</strong>
                 <?= escapeDetail($aiSuggestion['predicted_type']) ?>
-                (<?= (int) round(((float) $aiSuggestion['confidence_score']) * 100) ?>% sure)
+                (<?= $aiPercent ?>% sure)
                 <?php if (($report['type_name'] ?? '') !== $aiSuggestion['predicted_type']): ?>
                     <span class="status status-pending">Different from the reporter's choice</span>
                 <?php endif; ?>
             </p>
+            <p><strong>Confidence:</strong> <?= escapeDetail($aiLevel) ?></p>
+            <?php
+            $aiParts = explode(' | ', (string) $aiSuggestion['classification_source'], 2);
+            ?>
+            <?php if (!empty($aiParts[1])): ?>
+                <p><strong>AI comment:</strong> <?= escapeDetail($aiParts[1]) ?></p>
+            <?php endif; ?>
             <p class="muted">
-                Suggested by <?= escapeDetail($aiSuggestion['classification_source']) ?>.
+                Suggested by <?= escapeDetail($aiParts[0]) ?>.
                 This is only a guide. Barangay staff make the final decision.
             </p>
         </section>

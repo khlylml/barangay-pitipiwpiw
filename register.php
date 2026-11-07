@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Mobile number must be 09 followed by 9 digits, or +639 followed by 9 digits.';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Please enter a valid email address.';
-    } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[@$!])\S{8,}$/', $password)) {
-        $error = 'Password needs at least 8 characters, 1 capital letter, 1 number, and one of @ $ !, with no spaces.';
+    } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,}$/', $password)) {
+        $error = 'Password needs at least 8 characters, 1 capital letter, 1 number, and 1 special character (like @ $ ! # %), with no spaces.';
     } elseif ($password !== $confirmPassword) {
         $error = 'The passwords do not match.';
     } else {
@@ -132,7 +132,7 @@ require 'includes/header.php';
             <label for="password">Password</label>
             <input type="password" id="password" name="password"
                    minlength="8" autocomplete="new-password" required>
-            <small class="hint">8+ characters, 1 capital, 1 number, and @ $ or !</small>
+            <small class="hint">8+ characters, 1 capital, 1 number, and 1 special character</small>
         </div>
 
         <div class="form-field">

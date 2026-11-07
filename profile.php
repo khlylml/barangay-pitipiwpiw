@@ -107,10 +107,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         if (!password_verify($current, $user['password_hash'])) {
             $passwordError = 'Your current password is incorrect.';
-        } elseif (strlen($new) < 8) {
-            $passwordError = 'Your new password must contain at least 8 characters.';
+        } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,}$/', $new)) {
+            $passwordError = 'Password needs at least 8 characters, 1 capital letter, 1 number, and 1 special character (like @ $ ! # %), with no spaces.';
         } elseif ($new !== $confirm) {
             $passwordError = 'The new passwords do not match.';
+        } elseif ($new === $current) {
+            $passwordError = 'Your new password must be different from your current password.';
         } else {
             try {
                 $update = $pdo->prepare(
@@ -287,7 +289,7 @@ require __DIR__ . '/includes/header.php';
                 <label for="new_password">New Password</label>
                 <input type="password" id="new_password" name="new_password"
                        minlength="8" autocomplete="new-password" required>
-                <small>At least 8 characters.</small>
+                <small>8+ characters, 1 capital, 1 number, and 1 special character.</small>
             </div>
 
             <div class="form-field">
