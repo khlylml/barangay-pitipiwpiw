@@ -117,7 +117,12 @@ $navLink = function (
 
         <?php if ($useAdminLayout): ?>
 
+            <?php if (isSuperAdmin($userRole)): ?>
+                <?php $navLink('admin/users.php', 'User Accounts', '', '', 'users'); ?>
+            <?php endif; ?>
+
             <?php $navLink('admin/dashboard.php', 'Dashboard', '', '', 'dash'); ?>
+            <?php $navLink('report-incident.php', 'Report an Incident', '', '', 'plus'); ?>
 
             <p class="sidebar-label">Incident Reports</p>
             <?php $navLink('admin/reports.php', 'All Reports', '', '', 'file'); ?>
@@ -126,11 +131,6 @@ $navLink = function (
             <?php $navLink('admin/reports.php', 'In Progress', '?status=In Progress', '', 'tool'); ?>
             <?php $navLink('admin/reports.php', 'Resolved', '?status=Resolved', '', 'check'); ?>
             <?php $navLink('admin/reports.php', 'Archived', '?status=Archived', '', 'archive'); ?>
-
-            <?php if (isSuperAdmin($userRole)): ?>
-                <p class="sidebar-label">Super Admin</p>
-                <?php $navLink('admin/users.php', 'User Accounts', '', '', 'users'); ?>
-            <?php endif; ?>
 
             <p class="sidebar-label">Account</p>
             <?php $navLink('profile.php', 'My Profile', '', '', 'user'); ?>

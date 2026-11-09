@@ -3474,3 +3474,52 @@ h4,
 }
 
 .cam-shutter:hover { background: var(--blue); filter: brightness(1.1); }
+
+/* User Accounts: lighter list on phones (name, email, role, actions only) */
+@media (max-width: 640px) {
+    .users-table td:nth-child(1),
+    .users-table td:nth-child(4),
+    .users-table td:nth-child(5) {
+        display: none;
+    }
+}
+
+/* Mobile: keep the light/dark toggle in the top bar, beside the logo */
+@media (max-width: 700px) {
+    .is-public .topbar-brand {
+        order: 1;
+    }
+
+    .is-public .theme-toggle {
+        order: 2;
+        margin-left: auto;
+    }
+
+    .is-public .topbar-links {
+        order: 3;
+        width: 100%;
+        margin-left: 0;
+    }
+}
+
+/* Red error also for selects and text areas */
+.form-field select.is-invalid,
+.form-field textarea.is-invalid {
+    border-color: var(--red);
+    background: #fff6f5;
+}
+
+.form-field select.is-invalid:focus,
+.form-field textarea.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(180, 35, 24, 0.2);
+}
+
+[data-theme="dark"] .form-field input.is-invalid,
+[data-theme="dark"] .form-field select.is-invalid,
+[data-theme="dark"] .form-field textarea.is-invalid {
+    background: #2a1815;
+}
+
+.form-field .field-error {
+    margin-top: 6px;
+}

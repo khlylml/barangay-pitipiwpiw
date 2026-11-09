@@ -74,7 +74,7 @@ require 'includes/header.php';
     </p>
 <?php endif; ?>
 
-<form method="POST" enctype="multipart/form-data" class="form-layout">
+<form method="POST" enctype="multipart/form-data" class="form-layout" novalidate>
 
     <div class="form-field">
         <label for="incident_type">Incident Type</label>
@@ -706,10 +706,74 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmButton.disabled = false;
     }
 
+    // Red message under each field that is empty (instead of the browser bubble).
+    const requiredFields = [
+        ['incident_type', 'Please choose the type of incident.'],
+        ['other_type', 'Please tell us what kind of incident it is.'],
+        ['incident_date', 'Please choose the date of the incident.'],
+        ['description', 'Please describe what happened.'],
+        ['location_description', 'Please enter the street, purok, or nearby area.']
+    ];
+
+    function fieldError(field) {
+        let box = field.parentElement.querySelector('.field-error');
+        if (!box) {
+            box = document.createElement('small');
+            box.className = 'field-error';
+            box.id = 'err-' + field.name;
+            box.setAttribute('role', 'alert');
+            field.insertAdjacentElement('afterend', box);
+            field.setAttribute('aria-describedby', box.id);
+        }
+        return box;
+    }
+
+    function clearFieldError(field) {
+        field.classList.remove('is-invalid');
+        field.removeAttribute('aria-invalid');
+        const box = field.parentElement.querySelector('.field-error');
+        if (box) { box.textContent = ''; }
+    }
+
+    requiredFields.forEach(function (item) {
+        const field = form.elements[item[0]];
+        if (!field) { return; }
+        field.addEventListener('input', function () { clearFieldError(field); });
+        field.addEventListener('change', function () { clearFieldError(field); });
+    });
+
+    function checkRequired() {
+        let first = null;
+
+        requiredFields.forEach(function (item) {
+            const field = form.elements[item[0]];
+            if (!field || field.closest('[hidden]')) { return; }
+
+            if (field.value.trim() === '') {
+                field.classList.add('is-invalid');
+                field.setAttribute('aria-invalid', 'true');
+                fieldError(field).textContent = item[1];
+                if (!first) { first = field; }
+            } else {
+                clearFieldError(field);
+            }
+        });
+
+        if (first) {
+            first.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            first.focus({ preventScroll: true });
+        }
+
+        return first === null;
+    }
+
     form.addEventListener('submit', function (event) {
-        if (!window.BarangayApi || !form.checkValidity()) { return; }
+        if (!window.BarangayApi) { return; }
 
         event.preventDefault();
+
+        if (!checkRequired()) { return; }
+
         fillReview();
         dialog.showModal();
     });

@@ -113,7 +113,7 @@ document.addEventListener("DOMContentLoaded", function () {
     var targets = document.querySelectorAll(
         ".hero-card, .feature-section, .feature-item, .page-heading, " +
         ".stat-grid, .section-block, .details-card, .history-item, " +
-        ".track-list li, .data-table, .profile-section"
+        ".track-list li, .profile-section"
     );
 
     var observer = new IntersectionObserver(function (entries) {

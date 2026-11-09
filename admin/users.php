@@ -21,7 +21,7 @@ function escapeUsers($value): string
     return htmlspecialchars((string) ($value ?? ''), ENT_QUOTES, 'UTF-8');
 }
 
-$allowedRoles = ['resident', 'staff', 'admin', 'super_admin'];
+$allowedRoles = ['resident', 'admin', 'super_admin'];
 $currentUserId = (int) $_SESSION['user_id'];
 
 $error = '';
@@ -35,7 +35,7 @@ $newUser = [
     'email' => '',
     'contact_no' => '',
     'address' => '',
-    'role' => 'staff',
+    'role' => 'admin',
 ];
 
 // Easy-to-read temporary password (no look-alike characters).
@@ -158,7 +158,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $success = 'The account has been created.';
                     $newUser = array_map(static fn() => '', $newUser);
-                    $newUser['role'] = 'staff';
+                    $newUser['role'] = 'admin';
                 }
             }
         }
@@ -181,6 +181,18 @@ if (!in_array($roleFilter, $allowedRoles, true)) {
 }
 
 $users = [];
+$perPage = 15;
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$totalUsers = 0;
+$totalPages = 1;
+
+function usersPageLink(int $page): string
+{
+    $query = $_GET;
+    $query['page'] = $page;
+
+    return '?' . http_build_query($query);
+}
 
 try {
     $where = [];
@@ -197,11 +209,20 @@ try {
         $params[] = $roleFilter;
     }
 
+    $whereSql = $where ? ' WHERE ' . implode(' AND ', $where) : '';
+
+    $countStmt = $pdo->prepare('SELECT COUNT(*) FROM users' . $whereSql);
+    $countStmt->execute($params);
+    $totalUsers = (int) $countStmt->fetchColumn();
+
+    $totalPages = max(1, (int) ceil($totalUsers / $perPage));
+    $page = min($page, $totalPages);
+    $offset = ($page - 1) * $perPage;
+
     $stmt = $pdo->prepare(
         'SELECT user_id, first_name, last_name, email, contact_no, address, role
-         FROM users' .
-        ($where ? ' WHERE ' . implode(' AND ', $where) : '') .
-        ' ORDER BY user_id DESC'
+         FROM users' . $whereSql .
+        ' ORDER BY user_id DESC LIMIT ' . (int) $perPage . ' OFFSET ' . (int) $offset
     );
     $stmt->execute($params);
     $users = $stmt->fetchAll();
@@ -326,7 +347,7 @@ require __DIR__ . '/../includes/header.php';
 </form>
 
 <div class="table-wrap">
-    <table class="data-table">
+    <table class="data-table users-table">
         <thead>
             <tr>
                 <th>ID</th>
@@ -363,9 +384,15 @@ require __DIR__ . '/../includes/header.php';
 
                                     <label class="sr-only" for="role-<?= (int) $user['user_id'] ?>">Role</label>
                                     <select name="role" id="role-<?= (int) $user['user_id'] ?>">
-                                        <?php foreach ($allowedRoles as $role): ?>
+                                        <?php
+                                        $rowRoles = $allowedRoles;
+                                        $currentRowRole = strtolower((string) $user['role']);
+                                        if (!in_array($currentRowRole, $rowRoles, true)) {
+                                            array_unshift($rowRoles, $currentRowRole);
+                                        }
+                                        foreach ($rowRoles as $role): ?>
                                             <option value="<?= escapeUsers($role) ?>"
-                                                <?= strtolower($user['role']) === $role ? 'selected' : '' ?>>
+                                                <?= $currentRowRole === $role ? 'selected' : '' ?>>
                                                 <?= escapeUsers(roleLabel($role)) ?>
                                             </option>
                                         <?php endforeach; ?>
@@ -390,5 +417,19 @@ require __DIR__ . '/../includes/header.php';
         </tbody>
     </table>
 </div>
+
+<?php if ($totalPages > 1): ?>
+    <nav class="guest-pager" aria-label="User accounts pages">
+        <?php if ($page > 1): ?>
+            <a class="button button-outline" href="<?= escapeUsers(usersPageLink($page - 1)) ?>">Previous</a>
+        <?php endif; ?>
+
+        <span>Page <?= (int) $page ?> of <?= (int) $totalPages ?> (<?= (int) $totalUsers ?> accounts)</span>
+
+        <?php if ($page < $totalPages): ?>
+            <a class="button button-outline" href="<?= escapeUsers(usersPageLink($page + 1)) ?>">Next</a>
+        <?php endif; ?>
+    </nav>
+<?php endif; ?>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>
