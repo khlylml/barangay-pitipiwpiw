@@ -3,6 +3,8 @@ session_start();
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/auto-archive.php';
+autoArchiveResolvedReports($pdo);
 
 // Only staff, admin and super admin can access this page.
 if (!isset($_SESSION['user_id']) || !isStaffRole(currentRole())) {
@@ -148,9 +150,16 @@ require __DIR__ . '/../includes/header.php';
                                 </span>
                             </td>
                             <td class="row-actions">
-                                <a href="update-status.php?id=<?= (int) $report['incident_id'] ?>">
-                                    Update Status
-                                </a>
+                                <?php if (($report['status'] ?? '') === 'Archived'): ?>
+                                    <button type="button" class="link-button"
+                                            data-unarchive="<?= (int) $report['incident_id'] ?>">
+                                        Unarchive
+                                    </button>
+                                <?php else: ?>
+                                    <a href="update-status.php?id=<?= (int) $report['incident_id'] ?>">
+                                        Update Status
+                                    </a>
+                                <?php endif; ?>
                             </td>
                         </tr>
                     <?php endforeach; ?>

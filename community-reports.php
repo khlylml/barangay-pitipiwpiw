@@ -3,6 +3,8 @@ session_start();
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/auto-archive.php';
+autoArchiveResolvedReports($pdo);
 
 // Logged-in users only. Staff already have the full Manage Reports page.
 if (!isset($_SESSION['user_id'])) {

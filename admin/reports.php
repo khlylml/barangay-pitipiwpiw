@@ -10,6 +10,8 @@ if (!isset($_SESSION['user_id']) || !isStaffRole(currentRole())) {
 }
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/auto-archive.php';
+autoArchiveResolvedReports($pdo);
 
 function escapeReports($value): string
 {
@@ -142,7 +144,7 @@ require_once __DIR__ . '/../includes/header.php';
 
 <section class="page-heading">
     <h1>Manage Incident Reports</h1>
-    <p>Review submitted incidents and update their progress.</p>
+    <p>Review submitted incidents and update their progress. Resolved reports are archived automatically after 30 days.</p>
 </section>
 
 <?php if (($_GET['updated'] ?? '') === '1'): ?>
@@ -240,9 +242,16 @@ require_once __DIR__ . '/../includes/header.php';
                                     View
                                 </a>
 
-                                <a href="update-status.php?id=<?= (int) $report['incident_id'] ?>">
-                                    Update Status
-                                </a>
+                                <?php if (($report['status'] ?? '') === 'Archived'): ?>
+                                    <button type="button" class="link-button"
+                                            data-unarchive="<?= (int) $report['incident_id'] ?>">
+                                        Unarchive
+                                    </button>
+                                <?php else: ?>
+                                    <a href="update-status.php?id=<?= (int) $report['incident_id'] ?>">
+                                        Update Status
+                                    </a>
+                                <?php endif; ?>
 
                                 <?php if (in_array($report['status'], ['Resolved', 'Completed'], true)): ?>
                                     <button type="button" class="link-button"

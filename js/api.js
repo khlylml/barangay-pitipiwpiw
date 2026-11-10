@@ -55,4 +55,22 @@
                 window.alert(error.message);
             });
     });
+
+    // "Unarchive" buttons: an archived report goes back to Resolved.
+    document.addEventListener('click', function (event) {
+        var button = event.target.closest('[data-unarchive]');
+        if (!button) { return; }
+
+        if (!window.confirm('Unarchive this report? It will go back to Resolved.')) { return; }
+
+        button.disabled = true;
+        window.BarangayApi
+            .patch('/reports/' + button.getAttribute('data-unarchive') + '/status',
+                { status: 'Resolved', remarks: 'Unarchived by official' })
+            .then(function () { window.location.reload(); })
+            .catch(function (error) {
+                button.disabled = false;
+                window.alert(error.message);
+            });
+    });
 })();
