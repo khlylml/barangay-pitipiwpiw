@@ -253,7 +253,7 @@ require_once __DIR__ . '/../includes/header.php';
                                     </a>
                                 <?php endif; ?>
 
-                                <?php if (in_array($report['status'], ['Resolved', 'Completed'], true)): ?>
+                                <?php if (($report['status'] ?? '') !== 'Archived'): ?>
                                     <button type="button" class="link-button"
                                             data-archive="<?= (int) $report['incident_id'] ?>">
                                         Archive

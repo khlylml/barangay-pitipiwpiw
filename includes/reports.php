@@ -12,19 +12,14 @@ function normalizeStatus(?string $status): string
 }
 
 // Statuses an official may switch to from the current one.
-// A report can only be archived once it is Resolved, and an archived report
-// can only be restored to Resolved.
+// Any report can be archived (for example a prank or duplicate report), and an
+// archived report can be sent back to any active status.
 function allowedNextStatuses(string $current): array
 {
     $current = normalizeStatus($current);
-
-    if ($current === 'Archived') {
-        return ['Resolved'];
-    }
-
     $options = ['Pending', 'Verified', 'In Progress', 'Resolved'];
 
-    if ($current === 'Resolved') {
+    if ($current !== 'Archived') {
         $options[] = 'Archived';
     }
 
@@ -295,6 +290,25 @@ function updateIncidentStatus(
 
     $newStatus = trim($newStatus);
 
+    // "Restore" = unarchive: go back to the status the report had before it was archived.
+    if ($newStatus === 'Restore') {
+        if (normalizeStatus($current) !== 'Archived') {
+            throw new InvalidArgumentException('Only archived reports can be restored.');
+        }
+
+        $previous = $pdo->prepare(
+            "SELECT old_status FROM incident_status_history
+             WHERE incident_id = ? AND new_status = 'Archived'
+             ORDER BY history_id DESC LIMIT 1"
+        );
+        $previous->execute([$incidentId]);
+        $before = normalizeStatus((string) $previous->fetchColumn());
+
+        $newStatus = in_array($before, ['Pending', 'Verified', 'In Progress', 'Resolved'], true)
+            ? $before
+            : 'Resolved';
+    }
+
     if (!in_array($newStatus, REPORT_STATUSES, true)) {
         throw new InvalidArgumentException('Please select a valid status.');
     }
@@ -305,9 +319,7 @@ function updateIncidentStatus(
 
     if (!in_array($newStatus, allowedNextStatuses($current), true)) {
         throw new InvalidArgumentException(
-            $newStatus === 'Archived'
-                ? 'Only Resolved reports can be archived.'
-                : 'This status change is not allowed.'
+            'This status change is not allowed.'
         );
     }
 

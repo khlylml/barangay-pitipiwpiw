@@ -1,4 +1,4 @@
-// Tiny helper for the site's RESTful API (see API.md).
+// Tiny helper for the site's RESTful API.
 // Adds the CSRF token and sends/reads JSON for you.
 (function () {
     function meta(name) {
@@ -43,7 +43,7 @@
         var button = event.target.closest('[data-archive]');
         if (!button) { return; }
 
-        if (!window.confirm('Archive this resolved report?')) { return; }
+        if (!window.confirm('Archive this report? You can unarchive it later.')) { return; }
 
         button.disabled = true;
         window.BarangayApi
@@ -56,17 +56,17 @@
             });
     });
 
-    // "Unarchive" buttons: an archived report goes back to Resolved.
+    // "Unarchive" buttons: an archived report goes back to the status it had before.
     document.addEventListener('click', function (event) {
         var button = event.target.closest('[data-unarchive]');
         if (!button) { return; }
 
-        if (!window.confirm('Unarchive this report? It will go back to Resolved.')) { return; }
+        if (!window.confirm('Unarchive this report? It will go back to its previous status.')) { return; }
 
         button.disabled = true;
         window.BarangayApi
             .patch('/reports/' + button.getAttribute('data-unarchive') + '/status',
-                { status: 'Resolved', remarks: 'Unarchived by official' })
+                { status: 'Restore', remarks: 'Unarchived by official' })
             .then(function () { window.location.reload(); })
             .catch(function (error) {
                 button.disabled = false;
