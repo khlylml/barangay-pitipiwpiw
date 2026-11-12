@@ -4,7 +4,9 @@ session_start();
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
 require_once __DIR__ . '/includes/reports.php';
+require_once __DIR__ . '/includes/notifications.php';
 
+// Check the current user's access
 $isLoggedIn = isset($_SESSION['user_id']);
 $isGuest = !$isLoggedIn && ($_GET['guest'] ?? '') === '1';
 
@@ -12,12 +14,14 @@ $userRole = strtolower($_SESSION['role'] ?? 'resident');
 
 $isStaff = $isLoggedIn && isStaffRole($userRole);
 
+// Validate the incident ID
 $incidentId = filter_input(
     INPUT_GET,
     'id',
     FILTER_VALIDATE_INT
 );
 
+// Determine the correct Back destination
 if ($isGuest) {
     $backUrl = 'guest.php?guest=1';
 } elseif ($isStaff) {
@@ -26,6 +30,7 @@ if ($isGuest) {
     $backUrl = 'my-reports.php';
 }
 
+// Require either a logged-in user or guest mode
 if (!$incidentId || (!$isLoggedIn && !$isGuest)) {
     header(
         'Location: ' .
@@ -37,6 +42,7 @@ if (!$incidentId || (!$isLoggedIn && !$isGuest)) {
 $report = null;
 $history = [];
 
+// Escape output safely
 function escapeDetail($value): string
 {
     return htmlspecialchars(
@@ -47,6 +53,7 @@ function escapeDetail($value): string
 }
 
 try {
+    // Retrieve the incident report using PDO
     $sql = "
         SELECT
             i.incident_id,
@@ -95,6 +102,7 @@ try {
     );
 }
 
+// Report does not exist
 if (!$report) {
     http_response_code(404);
 
@@ -123,6 +131,9 @@ if (!$report) {
     exit;
 }
 
+// Residents may only view their own reports.
+// Guests can view limited public report details.
+// Staff/admin can view all reports.
 if (
     $isLoggedIn &&
     !$isStaff &&
@@ -154,6 +165,15 @@ if (
     exit;
 }
 
+// Retrieve status history for logged-in users only
+if ($isStaff) {
+    try {
+        acknowledgeReports($pdo, (int) $_SESSION['user_id'], [(int) $incidentId]);
+    } catch (Throwable $e) {
+        error_log('Acknowledge error: ' . $e->getMessage());
+    }
+}
+
 if ($isLoggedIn) {
     try {
         $historyStmt = $pdo->prepare("
@@ -178,6 +198,7 @@ if ($isLoggedIn) {
     }
 }
 
+// Retrieve uploaded evidence (photo/video) for logged-in users only
 $evidence = [];
 
 if ($isLoggedIn) {
@@ -199,6 +220,7 @@ if ($isLoggedIn) {
     }
 }
 
+// Only allow files saved by the upload form.
 function safeEvidencePath($path): ?string
 {
     $path = (string) ($path ?? '');
@@ -392,6 +414,7 @@ require __DIR__ . '/includes/header.php';
                 role="img"
                 aria-label="Map showing where the incident happened"
             ></div>
+
 
             <div class="details-actions">
                 <a

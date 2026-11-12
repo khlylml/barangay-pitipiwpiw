@@ -37,6 +37,7 @@ $iconPaths = [
     'users' => '<circle cx="9" cy="8" r="3.5"/><path d="M2 21c0-4 3-6 7-6s7 2 7 6"/><path d="M17 4.5a3.5 3.5 0 010 7M22 21c0-3-2-5-5-5.7"/>',
     'logout' => '<path d="M9 3H5a2 2 0 00-2 2v14a2 2 0 002 2h4"/><path d="M16 17l5-5-5-5M21 12H9"/>',
     'eye' => '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    'bell' => '<path d="M6 9a6 6 0 0112 0c0 6 2 7 2 7H4s2-1 2-7"/><path d="M10 20a2 2 0 004 0"/>',
 ];
 
 $icon = function (string $name) use ($iconPaths): string {
@@ -57,7 +58,8 @@ $navLink = function (
     string $label,
     string $query = '',
     string $class = '',
-    string $iconName = ''
+    string $iconName = '',
+    bool $badge = false
 ) use ($basePath, $currentPage, $icon): void {
     $params = [];
     parse_str(ltrim($query, '?'), $params);
@@ -71,7 +73,9 @@ $navLink = function (
         . ($classes !== '' ? ' class="' . $classes . '"' : '')
         . ($isActive ? ' aria-current="page"' : '')
         . '>' . ($iconName !== '' ? $icon($iconName) : '')
-        . '<span>' . htmlspecialchars($label) . '</span></a>' . "\n";
+        . '<span>' . htmlspecialchars($label) . '</span>'
+        . ($badge ? '<b class="nav-badge" data-notif-count hidden></b>' : '')
+        . '</a>' . "\n";
 };
 ?>
 <!DOCTYPE html>
@@ -90,8 +94,11 @@ $navLink = function (
     <?= $extraHead ?>
     <script src="<?= $basePath ?>js/app.js?v=<?= @filemtime(__DIR__ . '/../js/app.js') ?: 1 ?>" defer></script>
     <script src="<?= $basePath ?>js/api.js?v=<?= @filemtime(__DIR__ . '/../js/api.js') ?: 1 ?>" defer></script>
+    <?php if ($useAdminLayout): ?>
+    <script src="<?= $basePath ?>js/notifications.js?v=<?= @filemtime(__DIR__ . '/../js/notifications.js') ?: 1 ?>" defer></script>
+    <?php endif; ?>
 </head>
-<body class="<?= trim(($useAdminLayout ? 'admin-body ' : '') . $pageClass) ?>">
+<body class="<?= trim(($useAdminLayout ? 'admin-body ' : '') . $pageClass) ?>"<?= $useAdminLayout ? ' data-user-id="' . (int) $_SESSION['user_id'] . '"' : '' ?>>
 <?php $isPublic = !isset($_SESSION['user_id']); ?>
 <div class="app-shell<?= $isPublic ? ' is-public' : '' ?>">
 
@@ -123,9 +130,10 @@ $navLink = function (
 
             <?php $navLink('admin/dashboard.php', 'Dashboard', '', '', 'dash'); ?>
             <?php $navLink('report-incident.php', 'Report an Incident', '', '', 'plus'); ?>
+            <?php $navLink('admin/notifications.php', 'Notifications', '', '', 'bell', true); ?>
 
             <p class="sidebar-label">Incident Reports</p>
-            <?php $navLink('admin/reports.php', 'All Reports', '', '', 'file'); ?>
+            <?php $navLink('admin/reports.php', 'All Reports', '', '', 'file', true); ?>
             <?php $navLink('admin/reports.php', 'Pending', '?status=Pending', '', 'clock'); ?>
             <?php $navLink('admin/reports.php', 'Verified', '?status=Verified', '', 'check'); ?>
             <?php $navLink('admin/reports.php', 'In Progress', '?status=In Progress', '', 'tool'); ?>
@@ -180,6 +188,13 @@ $navLink = function (
                         <a href="<?= $basePath ?>index.php">Exit Guest Mode</a>
                     <?php endif; ?>
                 </span>
+            <?php endif; ?>
+
+            <?php if ($useAdminLayout): ?>
+                <a class="notif-bell" href="<?= $basePath ?>admin/notifications.php" aria-label="Notifications" title="Notifications">
+                    <?= $icon('bell') ?>
+                    <b class="nav-badge" data-notif-count hidden></b>
+                </a>
             <?php endif; ?>
 
             <?php if (isset($_SESSION['user_id'])): ?>

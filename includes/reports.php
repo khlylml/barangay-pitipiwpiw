@@ -1,7 +1,11 @@
 <?php
+// Shared incident-report logic.
+// Used by the web pages AND by the REST API (api/index.php), so the rules
+// (validation, saving, status changes) live in one place.
 
 const REPORT_STATUSES = ['Pending', 'Verified', 'In Progress', 'Resolved', 'Archived'];
 
+// "Completed" is an older name for "Resolved".
 function normalizeStatus(?string $status): string
 {
     return $status === 'Completed' ? 'Resolved' : (string) $status;
@@ -21,6 +25,9 @@ function splitOtherType(?string $typeName, string $description): array
     return [$typeName, $description];
 }
 
+// Statuses an official may switch to from the current one.
+// Any report can be archived (for example a prank or duplicate report), and an
+// archived report can be sent back to any active status.
 function allowedNextStatuses(string $current): array
 {
     $current = normalizeStatus($current);
@@ -36,6 +43,7 @@ function allowedNextStatuses(string $current): array
     ));
 }
 
+// Save one optional evidence file (photo or video) and return its web path.
 function saveEvidenceFile(
     array $files,
     string $field,
@@ -102,6 +110,7 @@ function saveEvidenceFile(
     return trim($folder, '/') . '/' . $fileName;
 }
 
+// Accepts "2026-10-22T07:00", "2026-10-22 07:00" or "2026-10-22".
 function parseIncidentDate(string $value): ?DateTime
 {
     foreach (['!Y-m-d\TH:i', '!Y-m-d H:i', '!Y-m-d'] as $format) {
@@ -120,6 +129,8 @@ function parseIncidentDate(string $value): ?DateTime
     return null;
 }
 
+// Validate and save a new incident report. Returns the new incident id.
+// Throws InvalidArgumentException (bad input) or RuntimeException (file problem).
 function createIncidentReport(PDO $pdo, int $reporterId, array $input, array $files = []): int
 {
     $typeId = (int) ($input['incident_type'] ?? $input['incident_type_id'] ?? 0);
@@ -169,6 +180,8 @@ function createIncidentReport(PDO $pdo, int $reporterId, array $input, array $fi
         throw new InvalidArgumentException('Please choose a valid incident type.');
     }
 
+    // "Other" needs a short label. It is saved as the first line of the
+    // description, so no database change is needed.
     if (strtolower(trim((string) $typeRow['type_name'])) === 'other') {
         $otherType = trim((string) ($input['other_type'] ?? ''));
 
@@ -257,6 +270,7 @@ function createIncidentReport(PDO $pdo, int $reporterId, array $input, array $fi
             $pdo->rollBack();
         }
 
+        // Do not keep files of a report that was not saved.
         foreach ($savedFiles as $path) {
             @unlink(dirname(__DIR__) . '/' . $path);
         }
@@ -264,12 +278,15 @@ function createIncidentReport(PDO $pdo, int $reporterId, array $input, array $fi
         throw $e;
     }
 
+    // The report is saved. Now ask the AI for a suggested type (never fails the report).
     require_once __DIR__ . '/ai.php';
     saveAiClassification($pdo, $incidentId, $description, $photoPath);
 
     return $incidentId;
 }
 
+// Change a report's status and record it in incident_status_history.
+// Throws OutOfBoundsException (report not found) or InvalidArgumentException.
 function updateIncidentStatus(
     PDO $pdo,
     int $incidentId,
@@ -287,6 +304,7 @@ function updateIncidentStatus(
 
     $newStatus = trim($newStatus);
 
+    // "Restore" = unarchive: go back to the status the report had before it was archived.
     if ($newStatus === 'Restore') {
         if (normalizeStatus($current) !== 'Archived') {
             throw new InvalidArgumentException('Only archived reports can be restored.');

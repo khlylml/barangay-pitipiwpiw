@@ -16,6 +16,7 @@ session_start();
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/reports.php';
+require_once __DIR__ . '/../includes/notifications.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -140,6 +141,38 @@ try {
             'type_id' => (int) $t['type_id'],
             'type_name' => $t['type_name'],
         ], $types)]);
+    }
+
+    if (($parts[0] ?? '') === 'notifications') {
+        if (!$isStaff) {
+            fail(403, 'Only barangay officials can view notifications.');
+        }
+
+        if (count($parts) === 1) {
+            if ($method !== 'GET') {
+                methodNotAllowed(['GET']);
+            }
+
+            respond(200, ['data' => fetchNotifications($pdo, $userId)]);
+        }
+
+        if ($parts === ['notifications', 'read']) {
+            if ($method !== 'POST') {
+                methodNotAllowed(['POST']);
+            }
+
+            $body = requestBody();
+
+            if (!empty($body['all'])) {
+                acknowledgeAllReports($pdo, $userId);
+            } else {
+                acknowledgeReports($pdo, $userId, (array) ($body['ids'] ?? []));
+            }
+
+            respond(200, ['data' => fetchNotifications($pdo, $userId)]);
+        }
+
+        fail(404, 'Not found.');
     }
 
     if (($parts[0] ?? '') !== 'reports') {
