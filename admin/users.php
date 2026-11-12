@@ -2,6 +2,7 @@
 session_start();
 
 require_once __DIR__ . '/../includes/auth.php';
+require_once __DIR__ . '/../includes/pager.php';
 
 // Super admin only.
 if (!isset($_SESSION['user_id'])) {
@@ -35,7 +36,7 @@ $newUser = [
     'email' => '',
     'contact_no' => '',
     'address' => '',
-    'role' => 'admin',
+    'role' => 'resident',
 ];
 
 // Easy-to-read temporary password (no look-alike characters).
@@ -128,12 +129,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $newUser['address'] === ''
             ) {
                 $error = 'Please complete all fields.';
+            } elseif (mb_strlen($newUser['first_name']) < 2 || mb_strlen($newUser['last_name']) < 2) {
+                $error = 'The first and last name must have at least 2 characters.';
             } elseif (!filter_var($newUser['email'], FILTER_VALIDATE_EMAIL)) {
                 $error = 'Please enter a valid email address.';
+            } elseif (!preg_match('/^(09\d{9}|\+639\d{9})$/', $newUser['contact_no'])) {
+                $error = 'Use 09 followed by 9 digits, or +639 followed by 9 digits for the contact number.';
+            } elseif (mb_strlen($newUser['address']) < 5) {
+                $error = 'Please enter the complete address.';
             } elseif (!in_array($newUser['role'], $allowedRoles, true)) {
                 $error = 'Please choose a valid role.';
-            } elseif (strlen($password) < 8) {
-                $error = 'The password must contain at least 8 characters.';
+            } elseif (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s])\S{8,}$/', $password)) {
+                $error = 'The password needs at least 8 characters with 1 capital letter, 1 number, and 1 special character.';
             } else {
                 $check = $pdo->prepare('SELECT user_id FROM users WHERE email = ? LIMIT 1');
                 $check->execute([$newUser['email']]);
@@ -158,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     $success = 'The account has been created.';
                     $newUser = array_map(static fn() => '', $newUser);
-                    $newUser['role'] = 'admin';
+                    $newUser['role'] = 'resident';
                 }
             }
         }
@@ -233,6 +240,7 @@ try {
 
 $basePath = '../';
 $pageTitle = 'User Accounts';
+$extraHead = '<script src="../js/admin-user-validation.js" defer></script>';
 
 require __DIR__ . '/../includes/header.php';
 ?>
@@ -265,10 +273,10 @@ require __DIR__ . '/../includes/header.php';
     </div>
 <?php endif; ?>
 
-<details class="profile-card create-user">
+<details class="profile-card create-user"<?= ($error !== '' && ($_POST['action'] ?? '') === 'create') ? ' open' : '' ?>>
     <summary>Create a new account</summary>
 
-    <form method="POST" class="form-layout register-grid">
+    <form method="POST" class="form-layout register-grid" id="createUserForm" novalidate>
         <input type="hidden" name="csrf_token" value="<?= escapeUsers(csrfToken()) ?>">
         <input type="hidden" name="action" value="create">
 
@@ -317,8 +325,8 @@ require __DIR__ . '/../includes/header.php';
         <div class="form-field">
             <label for="password">Password</label>
             <input type="password" id="password" name="password"
-                   minlength="8" autocomplete="new-password" required>
-            <small>At least 8 characters.</small>
+                   autocomplete="new-password" required>
+            <small>8+ characters, 1 capital, 1 number, and 1 special character.</small>
         </div>
 
         <div class="field-full">
@@ -418,18 +426,6 @@ require __DIR__ . '/../includes/header.php';
     </table>
 </div>
 
-<?php if ($totalPages > 1): ?>
-    <nav class="guest-pager" aria-label="User accounts pages">
-        <?php if ($page > 1): ?>
-            <a class="button button-outline" href="<?= escapeUsers(usersPageLink($page - 1)) ?>">Previous</a>
-        <?php endif; ?>
-
-        <span>Page <?= (int) $page ?> of <?= (int) $totalPages ?> (<?= (int) $totalUsers ?> accounts)</span>
-
-        <?php if ($page < $totalPages): ?>
-            <a class="button button-outline" href="<?= escapeUsers(usersPageLink($page + 1)) ?>">Next</a>
-        <?php endif; ?>
-    </nav>
-<?php endif; ?>
+<?= renderPager($page, $totalPages, 'usersPageLink', ' (' . $totalUsers . ' accounts)') ?>
 
 <?php require __DIR__ . '/../includes/footer.php'; ?>

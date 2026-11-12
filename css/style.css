@@ -3523,3 +3523,159 @@ h4,
 .form-field .field-error {
     margin-top: 6px;
 }
+
+.pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin: 20px 0 6px;
+}
+
+.pager-btn {
+    min-width: 38px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--white);
+    color: var(--blue);
+    font-size: 0.9rem;
+    text-align: center;
+    text-decoration: none;
+}
+
+a.pager-btn:hover {
+    background: var(--blue-tint);
+}
+
+.pager-btn.is-current {
+    border-color: var(--blue);
+    background: var(--blue);
+    color: #ffffff;
+}
+
+.pager-btn.is-disabled {
+    color: var(--muted);
+    opacity: 0.45;
+}
+
+.pager-info {
+    margin: 0 0 18px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+}
+
+.community-feed {
+    margin-top: 30px;
+}
+
+.feed-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.feed-head h2 {
+    margin: 0;
+}
+
+.feed-note {
+    margin: 4px 0 12px;
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.feed-panel {
+    padding: 4px 18px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--white);
+}
+
+.feed-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.feed-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.feed-item:last-child {
+    border-bottom: 0;
+}
+
+.feed-icon {
+    display: grid;
+    flex: none;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    border-radius: 50%;
+}
+
+.feed-pending .feed-icon { background: #fff3cf; color: #8a6100; }
+.feed-verified .feed-icon { background: #e3effa; color: #155a9c; }
+.feed-progress .feed-icon { background: #ffe9d2; color: #a35a10; }
+.feed-resolved .feed-icon { background: #e2f2ee; color: #1f7a62; }
+
+[data-theme="dark"] .feed-pending .feed-icon { background: #3a2f17; color: #f0cf85; }
+[data-theme="dark"] .feed-verified .feed-icon { background: #16334a; color: #8fcaf2; }
+[data-theme="dark"] .feed-progress .feed-icon { background: #3a2a17; color: #f2b878; }
+[data-theme="dark"] .feed-resolved .feed-icon { background: #14332b; color: #8fdcc0; }
+
+.feed-main {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.feed-main strong {
+    font-weight: 600;
+}
+
+.feed-meta {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--muted);
+    font-size: 0.88rem;
+}
+
+.feed-meta svg {
+    flex: none;
+}
+
+.feed-item .status {
+    flex: none;
+}
+
+@media (max-width: 520px) {
+    .feed-item {
+        align-items: flex-start;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+    }
+
+    .feed-main {
+        flex: 1 1 calc(100% - 58px);
+    }
+
+    .feed-item .status {
+        margin-left: 54px;
+    }
+
+    .feed-panel {
+        padding: 2px 14px;
+    }
+}

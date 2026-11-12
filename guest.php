@@ -2,6 +2,7 @@
 session_start();
 require_once 'config/database.php';
 require_once 'includes/auth.php';
+require_once 'includes/pager.php';
 require_once 'includes/auto-archive.php';
 autoArchiveResolvedReports($pdo);
 
@@ -241,17 +242,7 @@ function escapeGuest($value): string
 
     <?php endif; ?>
 
-    <?php if ($totalPages > 1): ?>
-        <nav class="guest-pager" aria-label="Pages">
-            <?php if ($page > 1): ?>
-                <a href="<?= escapeGuest(pageLink($page - 1)) ?>">&larr; Previous</a>
-            <?php endif; ?>
-            <span>Page <?= $page ?> of <?= $totalPages ?></span>
-            <?php if ($page < $totalPages): ?>
-                <a href="<?= escapeGuest(pageLink($page + 1)) ?>">Next &rarr;</a>
-            <?php endif; ?>
-        </nav>
-    <?php endif; ?>
+    <?= renderPager($page, $totalPages, 'pageLink') ?>
 
     <section class="guest-hotlines" aria-label="Emergency hotlines">
         <h2>Emergency hotlines</h2>

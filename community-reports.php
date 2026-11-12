@@ -3,6 +3,8 @@ session_start();
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/community-feed.php';
+require_once __DIR__ . '/includes/pager.php';
 require_once __DIR__ . '/includes/auto-archive.php';
 autoArchiveResolvedReports($pdo);
 
@@ -19,9 +21,17 @@ if (isStaffRole($_SESSION['role'] ?? '')) {
 
 $error = '';
 $reports = [];
+$perPage = 10;
+$page = max(1, (int) ($_GET['page'] ?? 1));
+$totalReports = 0;
+$totalPages = 1;
 
-// Public summary only: no reporter name, no description, no photos.
 try {
+    $totalReports = (int) $pdo->query("SELECT COUNT(*) FROM incidents WHERE status <> 'Archived'")->fetchColumn();
+    $totalPages = max(1, (int) ceil($totalReports / $perPage));
+    $page = min($page, $totalPages);
+    $offset = ($page - 1) * $perPage;
+
     $reports = $pdo->query(
         "SELECT
             i.incident_id,
@@ -34,11 +44,19 @@ try {
             ON i.incident_type_id = t.type_id
          WHERE i.status <> 'Archived'
          ORDER BY i.created_at DESC
-         LIMIT 100"
+         LIMIT " . (int) $perPage . " OFFSET " . (int) $offset
     )->fetchAll();
 } catch (PDOException $e) {
     error_log($e->getMessage());
     $error = 'Unable to load community reports. Please try again later.';
+}
+
+function communityPageLink(int $target): string
+{
+    $query = $_GET;
+    $query['page'] = $target;
+
+    return '?' . http_build_query($query);
 }
 
 function escapeCommunity($value): string
@@ -75,35 +93,11 @@ require __DIR__ . '/includes/header.php';
 
     <?php else: ?>
 
-        <div class="guest-table-wrap">
-            <table class="guest-table">
-                <thead>
-                    <tr>
-                        <th>Report No.</th>
-                        <th>Incident Type</th>
-                        <th>Date</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    <?php foreach ($reports as $report): ?>
-                        <tr>
-                            <td>#<?= (int) $report['incident_id'] ?></td>
-                            <td><?= escapeCommunity($report['type_name'] ?? 'Uncategorized') ?></td>
-                            <td><?= escapeCommunity($report['incident_date']) ?></td>
-                            <td><?= escapeCommunity($report['location_description']) ?></td>
-                            <td>
-                                <span class="status <?= statusBadgeClass($report['status']) ?>">
-                                    <?= escapeCommunity($report['status']) ?>
-                                </span>
-                            </td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
+        <div class="feed-panel">
+            <?= renderCommunityFeed($reports) ?>
         </div>
+
+        <?= renderPager($page, $totalPages, 'communityPageLink', ' (' . $totalReports . ' reports)') ?>
 
     <?php endif; ?>
 

@@ -3,6 +3,8 @@ session_start();
 
 require_once __DIR__ . '/config/database.php';
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/reports.php';
+require_once __DIR__ . '/includes/community-feed.php';
 
 // Resident dashboard requires login
 if (!isset($_SESSION['user_id'])) {
@@ -26,6 +28,7 @@ $pendingReports = 0;
 $inProgressReports = 0;
 $completedReports = 0;
 $recentReports = [];
+$communityReports = [];
 
 function escapeOutput($value)
 {
@@ -73,11 +76,20 @@ try {
                 ON i.incident_type_id = t.type_id
             WHERE i.reporter_id = ?
             ORDER BY i.created_at DESC
-            LIMIT 5";
+            LIMIT 2";
 
     $stmt = $pdo->prepare($sql);
     $stmt->execute([$userId]);
     $recentReports = $stmt->fetchAll();
+
+    $communityReports = $pdo->query(
+        "SELECT i.incident_id, i.incident_date, i.status, i.location_description, t.type_name
+         FROM incidents AS i
+         LEFT JOIN incident_types AS t ON i.incident_type_id = t.type_id
+         WHERE i.status <> 'Archived'
+         ORDER BY i.created_at DESC
+         LIMIT 5"
+    )->fetchAll();
 
 } catch (PDOException $e) {
     error_log('Resident dashboard database error: ' . $e->getMessage());
@@ -185,6 +197,22 @@ require __DIR__ . '/includes/header.php';
                 <a href="my-reports.php">View all my reports</a>
             </p>
 
+        <?php endif; ?>
+    </section>
+
+    <section class="community-feed" aria-label="Community reports">
+        <div class="feed-head">
+            <h2>Community Reports</h2>
+            <a href="community-reports.php">View all</a>
+        </div>
+        <p class="feed-note">Recent reports around the barangay. Names and details are kept private.</p>
+
+        <?php if (empty($communityReports)): ?>
+            <p class="empty-reports">No community reports yet.</p>
+        <?php else: ?>
+            <div class="feed-panel">
+                <?= renderCommunityFeed($communityReports) ?>
+            </div>
         <?php endif; ?>
     </section>
 
